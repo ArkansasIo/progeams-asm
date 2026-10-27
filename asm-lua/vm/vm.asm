@@ -1,8 +1,8 @@
 ; vm.asm — initial ASM-Lua VM skeleton
 ; Target: Linux x86-64, NASM
 ;
-; This file provides the dispatch-loop foundation. The public entry point
 ; vm_run accepts RDI = bytecode pointer and RSI = bytecode word count.
+; v0 currently implements HALT and a no-op extension opcode.
 
 BITS 64
 DEFAULT REL
@@ -10,7 +10,6 @@ DEFAULT REL
 %include "vm.inc"
 
 global vm_run
-
 global vm_halt
 
 section .text
@@ -22,26 +21,27 @@ vm_run:
     push r12
     push r13
 
-    mov r12, rdi            ; bytecode pointer
-    mov r13, rsi            ; instruction count
-    xor rbx, rbx            ; instruction index
+    mov r12, rdi
+    mov r13, rsi
+    xor rbx, rbx
 
 .dispatch:
     cmp rbx, r13
     jae .success
 
     mov eax, [r12 + rbx*4]
-    mov edx, eax
-    and eax, 0xFF           ; opcode
-    shr edx, 8              ; operand
+    and eax, 0xFF
 
     cmp eax, OP_HALT
     je .success
-    cmp eax, OP_NOP
+
+    ; 0x11 is reserved as a future NOP in the prototype.
+    cmp eax, 0x11
     je .next
-    ; Other opcodes are added as runtime modules are implemented.
+
     ; Unknown instructions fail closed.
-    jmp .invalid
+    mov eax, 1
+    jmp .done
 
 .next:
     inc rbx
@@ -49,10 +49,6 @@ vm_run:
 
 .success:
     xor eax, eax
-    jmp .done
-
-.invalid:
-    mov eax, 1
 
 .done:
     pop r13
@@ -64,7 +60,3 @@ vm_run:
 vm_halt:
     xor eax, eax
     ret
-
-section .rodata
-
-; Kept here so the VM can be extended without changing its external ABI.
