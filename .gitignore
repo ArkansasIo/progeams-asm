@@ -1,0 +1,21 @@
+# Build artifacts
+/build/
+/out/
+/dist/
+*.o
+*.obj
+*.bin
+*.com
+*.exe
+*.elf
+*.map
+*.lst
+*.sym
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
